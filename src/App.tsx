@@ -10,8 +10,8 @@ import { AngeloAvatarSection } from "./components/AngeloAvatarSection";
 import { LoginModal } from "./components/LoginModal";
 import { AdminPanel } from "./components/AdminPanel";
 import { MonitorPanel } from "./components/MonitorPanel";
-import { Carrera5KAnuncio } from "./components/CarreraAnuncio"; // ← nuevo
-import { Toaster } from "sonner@2.0.3";
+import { CarreraAnuncio } from "./components/CarreraAnuncio";
+import { Toaster } from "sonner";
 import { useState, useEffect } from "react";
 
 export default function App() {
@@ -62,7 +62,7 @@ export default function App() {
       <Toaster position="top-right" richColors />
 
       {/* ── Anuncio Carrera 5K: aparece 800ms después de cargar, una vez por sesión ── */}
-      <Carrera5KAnuncio delay={800} oncePerSession={true} />
+      <CarreraAnuncio delay={800} oncePerSession={true} />
 
       <NavbarAlt onLoginClick={() => setIsLoginOpen(true)} />
       <HeroSectionAlt />
