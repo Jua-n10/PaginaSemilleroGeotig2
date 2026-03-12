@@ -10,7 +10,7 @@ import { AngeloAvatarSection } from "./components/AngeloAvatarSection";
 import { LoginModal } from "./components/LoginModal";
 import { AdminPanel } from "./components/AdminPanel";
 import { MonitorPanel } from "./components/MonitorPanel";
-import { Carrera5KAnuncio } from "./components/Carrera5kAnuncio"; // ← nuevo
+import { Carrera5KAnuncio } from "./components/Carrera5kanuncio"; // ← nuevo
 import { Toaster } from "sonner@2.0.3";
 import { useState, useEffect } from "react";
 
