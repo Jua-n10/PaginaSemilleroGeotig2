@@ -9,7 +9,7 @@ interface Carrera5KAnuncioProps {
   oncePerSession?: boolean;
 }
 
-export function Carrera5KAnuncio({
+export function CarreraAnuncio({
   delay = 800,
   oncePerSession = true,
 }: Carrera5KAnuncioProps) {
