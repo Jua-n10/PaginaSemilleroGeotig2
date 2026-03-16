@@ -1,12 +1,12 @@
 import { useState, useRef } from "react";
-import { useForm } from "react-hook-form@7.55.0";
+import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { db } from "../../firabase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, Mail, Send } from "lucide-react";
 
 interface FormData {

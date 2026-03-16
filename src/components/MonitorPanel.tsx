@@ -19,7 +19,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import angeloRobot from "../assets/avatarPos.png";
 import {
   collection,
@@ -399,37 +399,38 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
   ).length;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-gray-50">
+    <div className="fixed inset-0 z-[100] bg-gray-50 flex flex-col">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-900 to-teal-600 text-white shadow-lg">
-        <div className="container mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <header className="bg-gradient-to-r from-blue-900 to-teal-600 text-white shadow-lg flex-shrink-0">
+        <div className="px-4 lg:px-6 py-3 lg:py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <img
               src={angeloRobot}
               alt="Angelo"
-              className="w-20 h-20 object-contain drop-shadow-lg"
+              className="w-10 h-10 lg:w-20 lg:h-20 object-contain drop-shadow-lg"
             />
             <div>
-              <h1 className="text-2xl font-bold">Panel de Monitor GEOTIG</h1>
-              <p className="text-teal-100 text-sm">
+              <h1 className="text-base lg:text-2xl font-bold leading-tight">Panel Monitor GEOTIG</h1>
+              <p className="text-teal-100 text-xs lg:text-sm hidden sm:block">
                 Gestión diaria del semillero
               </p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-1 lg:gap-2 bg-white/20 hover:bg-white/30 px-3 lg:px-4 py-2 rounded-lg transition-colors text-sm"
           >
-            <LogOut className="w-5 h-5" />
-            Cerrar Sesión
+            <LogOut className="w-4 h-4 lg:w-5 lg:h-5" />
+            <span className="hidden sm:inline">Cerrar Sesión</span>
           </button>
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white shadow-lg border-r">
-          <nav className="p-4 space-y-2">
+      {/* Layout principal */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar — solo visible en desktop (lg+) */}
+        <aside className="hidden lg:flex lg:flex-col w-64 bg-white shadow-lg border-r flex-shrink-0">
+          <nav className="p-4 space-y-2 overflow-y-auto flex-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const pendientesCount =
@@ -456,7 +457,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8">
           {/* Dashboard */}
           {activeTab === "dashboard" && (
             <div className="space-y-6">
@@ -1222,6 +1223,36 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
           </div>
         )}
       </div>
+
+      {/* Barra de navegación inferior — solo en móvil (lg:hidden) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[200] bg-white border-t border-gray-200 flex items-stretch shadow-lg flex-shrink-0">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const pendientesCount =
+            tab.id === "solicitudes"
+              ? solicitudes.filter((s) => s.estado === "pendiente").length
+              : 0;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors relative ${
+                activeTab === tab.id
+                  ? "text-teal-600 bg-teal-50"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[9px] font-medium leading-none">{tab.label}</span>
+              {pendientesCount > 0 && (
+                <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {pendientesCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
