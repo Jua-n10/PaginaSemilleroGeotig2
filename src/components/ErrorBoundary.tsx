@@ -50,42 +50,64 @@ export class ErrorBoundary extends Component<Props, State> {
           >
             Algo salió mal
           </h1>
-          <p style={{ color: "#6b7280", marginBottom: 24, maxWidth: 320 }}>
+          <p style={{ color: "#6b7280", marginBottom: 16, maxWidth: 320 }}>
             Ocurrió un error inesperado. Por favor recarga la página.
           </p>
-          <button
-            onClick={() => window.location.reload()}
+
+          {/* Error visible siempre para diagnóstico */}
+          <pre
             style={{
-              background: "#0d9488",
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              padding: "12px 28px",
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: "pointer",
+              marginBottom: 20,
+              padding: 12,
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
+              borderRadius: 8,
+              fontSize: 11,
+              color: "#b91c1c",
+              textAlign: "left",
+              maxWidth: "90vw",
+              overflowX: "auto",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
             }}
           >
-            Recargar página
-          </button>
-          {import.meta.env.DEV && this.state.error && (
-            <pre
+            {errorMsg}
+          </pre>
+
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+            <button
+              onClick={() => {
+                try { navigator.clipboard.writeText(errorMsg); } catch {}
+              }}
               style={{
-                marginTop: 24,
-                padding: 12,
-                background: "#fef2f2",
-                border: "1px solid #fca5a5",
-                borderRadius: 8,
-                fontSize: 11,
-                color: "#b91c1c",
-                textAlign: "left",
-                maxWidth: "90vw",
-                overflowX: "auto",
+                background: "#374151",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
               }}
             >
-              {this.state.error.message}
-            </pre>
-          )}
+              📋 Copiar error
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                background: "#0d9488",
+                color: "#fff",
+                border: "none",
+                borderRadius: 10,
+                padding: "10px 20px",
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              🔄 Recargar
+            </button>
+          </div>
         </div>
       );
     }
