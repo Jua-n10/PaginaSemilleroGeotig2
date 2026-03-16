@@ -18,7 +18,7 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [isMonitorPanelOpen, setIsMonitorPanelOpen] = useState(false);
-
+  console.log("App renderizada");
   useEffect(() => {
     const user = localStorage.getItem("geotig_user");
     if (user) {
@@ -27,6 +27,7 @@ export default function App() {
   }, []);
 
   const handleLoginSuccess = () => {
+    document.body.style.overflow = "unset"; // corrgiendo scroll bloqueado después de login
     const role = localStorage.getItem("geotig_role");
     if (role === "admin") {
       setIsAdminPanelOpen(true);

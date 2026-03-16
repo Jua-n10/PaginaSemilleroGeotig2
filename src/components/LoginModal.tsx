@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { LogIn, User, Lock, X, Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner@2.0.3";
-import angeloRobot from "figma:asset/0a47a596dc809b83cc73cb9ecf830467255dfd5b.png";
+import { toast } from "sonner";
+import angeloRobot from "../assets/avatarPos.png";
+
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firabase";
 

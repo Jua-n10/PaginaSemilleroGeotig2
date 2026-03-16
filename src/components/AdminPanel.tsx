@@ -20,7 +20,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 import angeloRobot from "../assets/avatarPos.png";
 import { SolicitudesPanel } from "./SolicitudesPanel";
 import {
@@ -341,7 +341,7 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-80px)]">
+      <div className="flex h-[calc(100svh-80px)] overflow-hidden">
         {/* Sidebar */}
         <aside className="w-64 bg-white shadow-lg border-r">
           <nav className="p-4 space-y-2">
