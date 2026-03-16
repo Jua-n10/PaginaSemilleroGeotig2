@@ -33,6 +33,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firabase";
 import emailjs from "@emailjs/browser";
+import { safeSession, safeLocal } from "../utils/safeStorage";
 
 // Configuración EmailJS
 const SERVICE_ID = "service_37lpii8";
@@ -216,20 +217,23 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
   }, []);
 
   useEffect(() => {
-    const alreadyWelcomed = sessionStorage.getItem("geotig_admin_welcome");
+    const alreadyWelcomed = safeSession.getItem("geotig_admin_welcome");
     if (!alreadyWelcomed) {
       toast.success(
         "¡Bienvenida Profesora! Has ingresado al Panel Administrativo de GEOTIG 👩‍🏫",
         { duration: 3000 },
       );
-      sessionStorage.setItem("geotig_admin_welcome", "true");
+      safeSession.setItem("geotig_admin_welcome", "true");
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("geotig_user");
-    localStorage.removeItem("geotig_login_time");
-    sessionStorage.removeItem("geotig_admin_welcome");
+    safeLocal.removeItem("geotig_user");
+    safeLocal.removeItem("geotig_login_time");
+    safeLocal.removeItem("geotig_role");
+    safeLocal.removeItem("geotig_uid");
+    safeLocal.removeItem("geotig_email");
+    safeSession.removeItem("geotig_admin_welcome");
     toast.success("Sesión cerrada exitosamente");
     onClose();
   };

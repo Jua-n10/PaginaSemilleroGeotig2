@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, ChevronRight, Zap } from "lucide-react";
-import carreraPoster from "../assets/carrera5k.png"; // ← pon aquí tu imagen
+import carreraPoster from "../assets/carrera5k.png";
+import { safeSession } from "../utils/safeStorage";
 
 interface Carrera5KAnuncioProps {
   /** cuántos ms esperar antes de mostrar (default 800) */
@@ -18,7 +19,7 @@ export function CarreraAnuncio({
 
   useEffect(() => {
     if (oncePerSession) {
-      const seen = sessionStorage.getItem("geotig_5k_seen");
+      const seen = safeSession.getItem("geotig_5k_seen");
       if (seen) return;
     }
     const t = setTimeout(() => setVisible(true), delay);
@@ -27,7 +28,7 @@ export function CarreraAnuncio({
 
   const close = () => {
     setClosing(true);
-    if (oncePerSession) sessionStorage.setItem("geotig_5k_seen", "1");
+    if (oncePerSession) safeSession.setItem("geotig_5k_seen", "1");
     setTimeout(() => setVisible(false), 420);
   };
 

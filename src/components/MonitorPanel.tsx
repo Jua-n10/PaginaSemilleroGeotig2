@@ -31,6 +31,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firabase";
 import emailjs from "@emailjs/browser";
+import { safeSession, safeLocal } from "../utils/safeStorage";
 
 // Configuración EmailJS
 const SERVICE_ID = "service_37lpii8";
@@ -278,21 +279,23 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
   }, []);
 
   useEffect(() => {
-    const alreadyWelcomed = sessionStorage.getItem("geotig_monitor_welcome");
+    const alreadyWelcomed = safeSession.getItem("geotig_monitor_welcome");
     if (!alreadyWelcomed) {
       toast.success(
         "¡Bienvenido Monitor! Has ingresado al Panel de Monitor de GEOTIG 👨‍💻",
-        { duration: 5000 },
+        { duration: 3000 },
       );
-      sessionStorage.setItem("geotig_monitor_welcome", "true");
+      safeSession.setItem("geotig_monitor_welcome", "true");
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("geotig_user");
-    localStorage.removeItem("geotig_login_time");
-    localStorage.removeItem("geotig_role");
-    sessionStorage.removeItem("geotig_monitor_welcome");
+    safeLocal.removeItem("geotig_user");
+    safeLocal.removeItem("geotig_login_time");
+    safeLocal.removeItem("geotig_role");
+    safeLocal.removeItem("geotig_uid");
+    safeLocal.removeItem("geotig_email");
+    safeSession.removeItem("geotig_monitor_welcome");
     toast.success("Sesión cerrada exitosamente");
     onClose();
   };

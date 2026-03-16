@@ -5,6 +5,7 @@ import angeloRobot from "../assets/avatarPos.png";
 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firabase";
+import { safeLocal } from "../utils/safeStorage";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -84,10 +85,10 @@ export function LoginModal({
             ? "monitor"
             : "user";
 
-      localStorage.setItem("geotig_uid", cred.user.uid);
-      localStorage.setItem("geotig_email", cred.user.email ?? "");
-      localStorage.setItem("geotig_role", role);
-      localStorage.setItem("geotig_login_time", new Date().toISOString());
+      safeLocal.setItem("geotig_uid", cred.user.uid);
+      safeLocal.setItem("geotig_email", cred.user.email ?? "");
+      safeLocal.setItem("geotig_role", role);
+      safeLocal.setItem("geotig_login_time", new Date().toISOString());
 
       setFormData({ username: "", password: "" });
       onClose();
