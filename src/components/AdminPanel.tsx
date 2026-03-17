@@ -18,6 +18,7 @@ import {
   FileText,
   Award,
   Eye,
+  MoreHorizontal,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { toast } from "sonner";
@@ -169,7 +170,7 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
   ]);
 
   const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
-
+  const [showMasMenu, setShowMasMenu] = useState(false);
   const [editingProyecto, setEditingProyecto] = useState<string | null>(null);
   const [comentarioSolicitud, setComentarioSolicitud] = useState("");
   const [solicitudSeleccionada, setSolicitudSeleccionada] =
@@ -332,7 +333,9 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
               <h1 className="text-base lg:text-2xl font-bold leading-tight">
                 Panel Admin GEOTIG
               </h1>
-              <p className="text-teal-100 text-xs lg:text-sm hidden sm:block">Gestión del sitio web</p>
+              <p className="text-teal-100 text-xs lg:text-sm hidden sm:block">
+                Gestión del sitio web
+              </p>
             </div>
           </div>
           <button
@@ -1118,34 +1121,100 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
         )}
       </div>
 
-      {/* Barra de navegación inferior — solo en móvil (lg:hidden) */}
+      {/* Overlay */}
+      {showMasMenu && (
+        <div
+          className="fixed inset-0 z-[199]"
+          onClick={() => setShowMasMenu(false)}
+        />
+      )}
+
+      {/* Menú flotante "Más" — FUERA del nav, fixed independiente */}
+      {showMasMenu && (
+        <div className="fixed bottom-16 right-2 z-[201] bg-white border border-gray-200 rounded-xl shadow-xl w-52 overflow-hidden">
+          <button
+            onClick={() => {
+              setActiveTab("areas");
+              setShowMasMenu(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors ${
+              activeTab === "areas"
+                ? "text-teal-600 font-medium"
+                : "text-gray-700"
+            }`}
+          >
+            <Microscope className="w-4 h-4" />
+            Áreas de Investigación
+          </button>
+          <div className="h-px bg-gray-100 mx-3" />
+          <button
+            onClick={() => {
+              setActiveTab("configuracion");
+              setShowMasMenu(false);
+            }}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors ${
+              activeTab === "configuracion"
+                ? "text-teal-600 font-medium"
+                : "text-gray-700"
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            Configuración
+          </button>
+        </div>
+      )}
+
+      {/* Barra de navegación inferior — solo en móvil */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[200] bg-white border-t border-gray-200 flex items-stretch shadow-lg flex-shrink-0">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const pendientesCount =
-            tab.id === "solicitudes"
-              ? solicitudes.filter((s) => s.estado === "pendiente").length
-              : 0;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabType)}
-              className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors relative ${
-                activeTab === tab.id
-                  ? "text-teal-600 bg-teal-50"
-                  : "text-gray-500 hover:text-gray-800"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-medium leading-none">{tab.label}</span>
-              {pendientesCount > 0 && (
-                <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {pendientesCount}
+        {(["dashboard", "proyectos", "solicitudes", "equipo"] as const).map(
+          (tabId) => {
+            const tab = tabs.find((t) => t.id === tabId)!;
+            const Icon = tab.icon;
+            const pendientesCount =
+              tabId === "solicitudes"
+                ? solicitudes.filter((s) => s.estado === "pendiente").length
+                : 0;
+            return (
+              <button
+                key={tabId}
+                onClick={() => {
+                  setActiveTab(tabId);
+                  setShowMasMenu(false);
+                }}
+                className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors relative ${
+                  activeTab === tabId
+                    ? "text-teal-600 bg-teal-50"
+                    : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium leading-none">
+                  {tab.label}
                 </span>
-              )}
-            </button>
-          );
-        })}
+                {pendientesCount > 0 && (
+                  <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {pendientesCount}
+                  </span>
+                )}
+              </button>
+            );
+          },
+        )}
+
+        {/* Botón "Más" */}
+        <button
+          onClick={() => setShowMasMenu((prev) => !prev)}
+          className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${
+            activeTab === "areas" ||
+            activeTab === "configuracion" ||
+            showMasMenu
+              ? "text-teal-600 bg-teal-50"
+              : "text-gray-500 hover:text-gray-800"
+          }`}
+        >
+          <MoreHorizontal className="w-5 h-5" />
+          <span className="text-[10px] font-medium leading-none">Más</span>
+        </button>
       </nav>
     </div>
   );

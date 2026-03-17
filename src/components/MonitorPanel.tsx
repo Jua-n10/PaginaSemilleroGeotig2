@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   FolderKanban,
   Users,
-  Microscope,
   UserPlus,
   LogOut,
   CheckSquare,
@@ -13,7 +12,6 @@ import {
   Award,
   Mail,
   Plus,
-  Edit,
   Save,
   X,
   Eye,
@@ -33,7 +31,6 @@ import { db } from "../firabase";
 import emailjs from "@emailjs/browser";
 import { safeSession, safeLocal } from "../utils/safeStorage";
 
-// Configuración EmailJS
 const SERVICE_ID = "service_37lpii8";
 const TEMPLATE_ID_BIENVENIDA = "template_2bae6in";
 const TEMPLATE_ID_RECHAZO = "template_vc220xa";
@@ -64,8 +61,8 @@ interface Miembro {
 
 interface Solicitud {
   id: string;
-  nombres: string; // ✅ actualizado
-  apellidos: string; // ✅ actualizado
+  nombres: string;
+  apellidos: string;
   email: string;
   programa: string;
   mensaje: string;
@@ -82,7 +79,6 @@ interface Tarea {
   fecha: string;
 }
 
-// Funciones para enviar emails con EmailJS
 async function enviarCorreoBienvenida(
   solicitud: Solicitud,
   comentario: string,
@@ -90,20 +86,18 @@ async function enviarCorreoBienvenida(
   const comentarioFinal =
     comentario?.trim() ||
     "Pronto recibirás más información sobre nuestras actividades.";
-
   try {
     await emailjs.send(
       SERVICE_ID,
       TEMPLATE_ID_BIENVENIDA,
       {
         to_email: solicitud.email,
-        nombre: `${solicitud.nombres} ${solicitud.apellidos}`, // ✅ actualizado
+        nombre: `${solicitud.nombres} ${solicitud.apellidos}`,
         programa: solicitud.programa,
         comentario: comentarioFinal,
       },
       { publicKey: PUBLIC_KEY },
     );
-    console.log("Email de bienvenida enviado a:", solicitud.email);
   } catch (error) {
     console.error("Error enviando email de bienvenida:", error);
     throw error;
@@ -114,20 +108,18 @@ async function enviarCorreoRechazo(solicitud: Solicitud, comentario: string) {
   const comentarioFinal =
     comentario?.trim() ||
     "Puedes solicitar nuevamente en próximas convocatorias.";
-
   try {
     await emailjs.send(
       SERVICE_ID,
       TEMPLATE_ID_RECHAZO,
       {
         to_email: solicitud.email,
-        nombre: `${solicitud.nombres} ${solicitud.apellidos}`, // ✅ actualizado
+        nombre: `${solicitud.nombres} ${solicitud.apellidos}`,
         programa: solicitud.programa,
         comentario: comentarioFinal,
       },
       { publicKey: PUBLIC_KEY },
     );
-    console.log("Email de rechazo enviado a:", solicitud.email);
   } catch (error) {
     console.error("Error enviando email de rechazo:", error);
     throw error;
@@ -260,8 +252,8 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
         const docData = doc.data();
         return {
           id: doc.id,
-          nombres: docData.nombres || "", // ✅ actualizado
-          apellidos: docData.apellidos || "", // ✅ actualizado
+          nombres: docData.nombres || "",
+          apellidos: docData.apellidos || "",
           email: docData.email || "",
           programa: docData.programa || "",
           mensaje: docData.motivacion || "",
@@ -386,6 +378,15 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
     );
   };
 
+  // Labels cortos para móvil — sidebar usa tab.label completo
+  const mobileLabels: Record<TabType, string> = {
+    dashboard: "Inicio",
+    proyectos: "Proyectos",
+    equipo: "Equipo",
+    solicitudes: "Solicitudes",
+    tareas: "Tareas",
+  };
+
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "proyectos", label: "Proyectos", icon: FolderKanban },
@@ -413,7 +414,9 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
               className="w-10 h-10 lg:w-20 lg:h-20 object-contain drop-shadow-lg"
             />
             <div>
-              <h1 className="text-base lg:text-2xl font-bold leading-tight">Panel Monitor GEOTIG</h1>
+              <h1 className="text-base lg:text-2xl font-bold leading-tight">
+                Panel Monitor GEOTIG
+              </h1>
               <p className="text-teal-100 text-xs lg:text-sm hidden sm:block">
                 Gestión diaria del semillero
               </p>
@@ -431,26 +434,32 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
 
       {/* Layout principal */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — solo visible en desktop (lg+) */}
+        {/* Sidebar — solo desktop */}
         <aside className="hidden lg:flex lg:flex-col w-64 bg-white shadow-lg border-r flex-shrink-0">
           <nav className="p-4 space-y-2 overflow-y-auto flex-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
-              const pendientesCount =
+              const badge =
                 tab.id === "solicitudes"
-                  ? solicitudes.filter((s) => s.estado === "pendiente").length
-                  : 0;
+                  ? solicitudesPendientes
+                  : tab.id === "tareas"
+                    ? tareasPendientes
+                    : 0;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === tab.id ? "bg-gradient-to-r from-blue-900 to-teal-600 text-white" : "text-gray-700 hover:bg-gray-100"}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? "bg-gradient-to-r from-blue-900 to-teal-600 text-white"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="flex-1 text-left">{tab.label}</span>
-                  {pendientesCount > 0 && (
+                  {badge > 0 && (
                     <span className="bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                      {pendientesCount}
+                      {badge}
                     </span>
                   )}
                 </button>
@@ -468,7 +477,9 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                 <h2 className="text-3xl font-bold text-gray-900">
                   Dashboard del Monitor
                 </h2>
-                <p className="text-gray-600">Bienvenido, Monitor GEOTIG 👋</p>
+                <p className="text-gray-600 hidden sm:block">
+                  Bienvenido, Monitor GEOTIG 👋
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -669,7 +680,13 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                                     e.target.value,
                                   )
                                 }
-                                className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${proyecto.estado === "activo" ? "bg-green-100 text-green-700 border-green-300" : proyecto.estado === "completado" ? "bg-blue-100 text-blue-700 border-blue-300" : "bg-orange-100 text-orange-700 border-orange-300"}`}
+                                className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${
+                                  proyecto.estado === "activo"
+                                    ? "bg-green-100 text-green-700 border-green-300"
+                                    : proyecto.estado === "completado"
+                                      ? "bg-blue-100 text-blue-700 border-blue-300"
+                                      : "bg-orange-100 text-orange-700 border-orange-300"
+                                }`}
                               >
                                 <option value="en_desarrollo">
                                   En Desarrollo
@@ -757,28 +774,39 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
               <div className="flex gap-2 border-b border-gray-200">
                 <button
                   onClick={() => setSolicitudesSubTab("pendientes")}
-                  className={`px-6 py-3 font-medium border-b-2 transition-colors ${solicitudesSubTab === "pendientes" ? "border-orange-500 text-orange-600" : "border-transparent text-gray-600 hover:text-gray-900"}`}
+                  className={`px-6 py-3 font-medium border-b-2 transition-colors ${
+                    solicitudesSubTab === "pendientes"
+                      ? "border-orange-500 text-orange-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
                 >
                   Pendientes (
                   {solicitudes.filter((s) => s.estado === "pendiente").length})
                 </button>
                 <button
                   onClick={() => setSolicitudesSubTab("aprobadas")}
-                  className={`px-6 py-3 font-medium border-b-2 transition-colors ${solicitudesSubTab === "aprobadas" ? "border-green-500 text-green-600" : "border-transparent text-gray-600 hover:text-gray-900"}`}
+                  className={`px-6 py-3 font-medium border-b-2 transition-colors ${
+                    solicitudesSubTab === "aprobadas"
+                      ? "border-green-500 text-green-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
                 >
                   Aprobadas (
                   {solicitudes.filter((s) => s.estado === "aceptada").length})
                 </button>
                 <button
                   onClick={() => setSolicitudesSubTab("rechazadas")}
-                  className={`px-6 py-3 font-medium border-b-2 transition-colors ${solicitudesSubTab === "rechazadas" ? "border-red-500 text-red-600" : "border-transparent text-gray-600 hover:text-gray-900"}`}
+                  className={`px-6 py-3 font-medium border-b-2 transition-colors ${
+                    solicitudesSubTab === "rechazadas"
+                      ? "border-red-500 text-red-600"
+                      : "border-transparent text-gray-600 hover:text-gray-900"
+                  }`}
                 >
                   Rechazadas (
                   {solicitudes.filter((s) => s.estado === "rechazada").length})
                 </button>
               </div>
 
-              {/* Pendientes */}
               {solicitudesSubTab === "pendientes" && (
                 <div className="grid gap-4">
                   {solicitudes
@@ -793,8 +821,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h3 className="text-xl font-bold text-gray-900">
-                                  {solicitud.nombres} {solicitud.apellidos}{" "}
-                                  {/* ✅ actualizado */}
+                                  {solicitud.nombres} {solicitud.apellidos}
                                 </h3>
                                 <p className="text-teal-600 font-medium text-sm mt-1">
                                   {solicitud.programa}
@@ -855,7 +882,6 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                 </div>
               )}
 
-              {/* Aprobadas */}
               {solicitudesSubTab === "aprobadas" && (
                 <div className="grid gap-4">
                   {solicitudes
@@ -870,8 +896,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h3 className="text-xl font-bold text-gray-900">
-                                  {solicitud.nombres} {solicitud.apellidos}{" "}
-                                  {/* ✅ actualizado */}
+                                  {solicitud.nombres} {solicitud.apellidos}
                                 </h3>
                                 <p className="text-teal-600 font-medium text-sm mt-1">
                                   {solicitud.programa}
@@ -912,7 +937,6 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                 </div>
               )}
 
-              {/* Rechazadas */}
               {solicitudesSubTab === "rechazadas" && (
                 <div className="grid gap-4">
                   {solicitudes
@@ -927,8 +951,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <h3 className="text-xl font-bold text-gray-900">
-                                  {solicitud.nombres} {solicitud.apellidos}{" "}
-                                  {/* ✅ actualizado */}
+                                  {solicitud.nombres} {solicitud.apellidos}
                                 </h3>
                                 <p className="text-teal-600 font-medium text-sm mt-1">
                                   {solicitud.programa}
@@ -1053,7 +1076,13 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                   .map((tarea) => (
                     <Card
                       key={tarea.id}
-                      className={`hover:shadow-lg transition-shadow ${tarea.prioridad === "alta" ? "border-l-4 border-l-red-500" : tarea.prioridad === "media" ? "border-l-4 border-l-orange-500" : "border-l-4 border-l-blue-500"}`}
+                      className={`hover:shadow-lg transition-shadow ${
+                        tarea.prioridad === "alta"
+                          ? "border-l-4 border-l-red-500"
+                          : tarea.prioridad === "media"
+                            ? "border-l-4 border-l-orange-500"
+                            : "border-l-4 border-l-blue-500"
+                      }`}
                     >
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
@@ -1062,7 +1091,11 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                             className="mt-1"
                           >
                             <div
-                              className={`w-6 h-6 rounded border-2 flex items-center justify-center ${tarea.estado === "completada" ? "bg-green-500 border-green-500" : "border-gray-300 hover:border-teal-500"}`}
+                              className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                                tarea.estado === "completada"
+                                  ? "bg-green-500 border-green-500"
+                                  : "border-gray-300 hover:border-teal-500"
+                              }`}
                             >
                               {tarea.estado === "completada" && (
                                 <CheckSquare className="w-4 h-4 text-white" />
@@ -1075,7 +1108,13 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                                 {tarea.titulo}
                               </h3>
                               <span
-                                className={`px-2 py-1 rounded text-xs font-medium ${tarea.prioridad === "alta" ? "bg-red-100 text-red-700" : tarea.prioridad === "media" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}
+                                className={`px-2 py-1 rounded text-xs font-medium ${
+                                  tarea.prioridad === "alta"
+                                    ? "bg-red-100 text-red-700"
+                                    : tarea.prioridad === "media"
+                                      ? "bg-orange-100 text-orange-700"
+                                      : "bg-blue-100 text-blue-700"
+                                }`}
                               >
                                 {tarea.prioridad.toUpperCase()}
                               </span>
@@ -1089,7 +1128,11 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                                 {tarea.fecha}
                               </span>
                               <span
-                                className={`text-sm font-medium ${tarea.estado === "en_progreso" ? "text-blue-600" : "text-gray-500"}`}
+                                className={`text-sm font-medium ${
+                                  tarea.estado === "en_progreso"
+                                    ? "text-blue-600"
+                                    : "text-gray-500"
+                                }`}
                               >
                                 {tarea.estado === "en_progreso"
                                   ? "En Progreso"
@@ -1142,7 +1185,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
 
         {/* Modal Aceptar */}
         {modalAceptar && (
-          <div className="fixed inset-0 z-[200] bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-[200] bg-black bg-opacity-50 flex items-center justify-center p-4">
             <Card className="w-full max-w-md">
               <CardHeader>
                 <CardTitle>Agregar Comentario</CardTitle>
@@ -1185,7 +1228,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
 
         {/* Modal Rechazar */}
         {modalRechazar && (
-          <div className="fixed inset-0 z-[200] bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="fixed inset-0 z-[200] bg-black bg-opacity-50 flex items-center justify-center p-4">
             <Card className="w-full max-w-md">
               <CardHeader>
                 <CardTitle>Agregar Comentario</CardTitle>
@@ -1227,14 +1270,16 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
         )}
       </div>
 
-      {/* Barra de navegación inferior — solo en móvil (lg:hidden) */}
+      {/* Barra de navegación inferior — solo en móvil */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[200] bg-white border-t border-gray-200 flex items-stretch shadow-lg flex-shrink-0">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const pendientesCount =
+          const badge =
             tab.id === "solicitudes"
-              ? solicitudes.filter((s) => s.estado === "pendiente").length
-              : 0;
+              ? solicitudesPendientes
+              : tab.id === "tareas"
+                ? tareasPendientes
+                : 0;
           return (
             <button
               key={tab.id}
@@ -1246,10 +1291,12 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
               }`}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-medium leading-none">{tab.label}</span>
-              {pendientesCount > 0 && (
+              <span className="text-[10px] font-medium leading-none">
+                {mobileLabels[tab.id as TabType]}
+              </span>
+              {badge > 0 && (
                 <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {pendientesCount}
+                  {badge}
                 </span>
               )}
             </button>
