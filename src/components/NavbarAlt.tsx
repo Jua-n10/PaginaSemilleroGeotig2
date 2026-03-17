@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Menu, X, LogIn } from 'lucide-react';
-import logo from 'figma:asset/775b8c572767ea025e0e8192b1b8c7be5684bea4.png';
+import { useState, useEffect } from "react";
+import { Menu, X, LogIn } from "lucide-react";
+import logo from "figma:asset/775b8c572767ea025e0e8192b1b8c7be5684bea4.png";
 
 export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,32 +10,32 @@ export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
       setIsMobileMenuOpen(false);
     }
   };
 
   const navItems = [
-    { label: 'Inicio', id: 'hero' },
-    { label: 'Sobre Nosotros', id: 'nosotros' },
-    { label: 'Angelo', id: 'angelo' },
-    { label: 'Investigación', id: 'investigacion' },
-    { label: 'Proyectos', id: 'proyectos' },
-    { label: 'Equipo', id: 'equipo' },
-    { label: 'Contacto', id: 'unete' },
+    { label: "Inicio", id: "hero" },
+    { label: "Sobre Nosotros", id: "nosotros" },
+    { label: "Terry", id: "angelo" },
+    { label: "Investigación", id: "investigacion" },
+    { label: "Proyectos", id: "proyectos" },
+    { label: "Equipo", id: "equipo" },
+    { label: "Contacto", id: "unete" },
   ];
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm'
+        isScrolled ? "bg-white shadow-lg" : "bg-white/95 backdrop-blur-sm"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
