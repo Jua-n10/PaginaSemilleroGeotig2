@@ -342,9 +342,9 @@ export function JoinSectionAlt() {
                   AM
                 </div>
                 <div>
-                  <div className="text-sm text-gray-900">Ana María G.</div>
+                  <div className="text-sm text-gray-900">Luis Alexis Mendez</div>
                   <div className="text-xs text-gray-500">
-                    Estudiante Ingeniería Civil
+                    Estudiante Geografia
                   </div>
                 </div>
               </div>
