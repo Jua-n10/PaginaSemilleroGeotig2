@@ -29,7 +29,7 @@ export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
     { label: "Investigación", id: "investigacion" },
     { label: "Proyectos", id: "proyectos" },
     { label: "Equipo", id: "equipo" },
-    { label: "Contacto", id: "unete" },
+    { label: "Inscribete Aqui", id: "unete" },
   ];
 
   return (

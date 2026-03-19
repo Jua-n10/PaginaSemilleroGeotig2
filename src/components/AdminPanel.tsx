@@ -177,6 +177,7 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
     useState<Solicitud | null>(null);
   const [modalAceptar, setModalAceptar] = useState(false);
   const [modalRechazar, setModalRechazar] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [solicitudesSubTab, setSolicitudesSubTab] = useState<
     "pendientes" | "aprobadas" | "rechazadas"
   >("pendientes");
@@ -246,7 +247,8 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
   };
 
   const handleConfirmarAceptacion = async () => {
-    if (!solicitudSeleccionada) return;
+    if (!solicitudSeleccionada || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await updateDoc(doc(db, "solicitudes", solicitudSeleccionada.id), {
         estado: "aceptada",
@@ -261,6 +263,7 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al aprobar solicitud o enviar email");
+      setIsSubmitting(false); // Solo reactivar en caso de error
     }
   };
 
@@ -271,7 +274,8 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
   };
 
   const handleConfirmarRechazo = async () => {
-    if (!solicitudSeleccionada) return;
+    if (!solicitudSeleccionada || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await updateDoc(doc(db, "solicitudes", solicitudSeleccionada.id), {
         estado: "rechazada",
@@ -286,6 +290,7 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al rechazar solicitud o enviar email");
+      setIsSubmitting(false); // Solo reactivar en caso de error
     }
   };
 
@@ -1061,15 +1066,27 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
                       setComentarioSolicitud("");
                       setSolicitudSeleccionada(null);
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleConfirmarAceptacion}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                   >
-                    Aceptar
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                        </svg>
+                        Enviando...
+                      </>
+                    ) : (
+                      "Aceptar"
+                    )}
                   </button>
                 </div>
               </CardContent>
@@ -1104,15 +1121,27 @@ export function AdminPanel({ onClose }: AdminPanelProps) {
                       setComentarioSolicitud("");
                       setSolicitudSeleccionada(null);
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleConfirmarRechazo}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                   >
-                    Rechazar
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                        </svg>
+                        Enviando...
+                      </>
+                    ) : (
+                      "Rechazar"
+                    )}
                   </button>
                 </div>
               </CardContent>

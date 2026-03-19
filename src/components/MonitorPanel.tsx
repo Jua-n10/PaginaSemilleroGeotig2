@@ -15,6 +15,7 @@ import {
   Save,
   X,
   Eye,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ import {
   onSnapshot,
   updateDoc,
   doc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firabase";
 import emailjs from "@emailjs/browser";
@@ -197,6 +199,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
     useState<Solicitud | null>(null);
   const [modalAceptar, setModalAceptar] = useState(false);
   const [modalRechazar, setModalRechazar] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [solicitudesSubTab, setSolicitudesSubTab] = useState<
     "pendientes" | "aprobadas" | "rechazadas"
   >("pendientes");
@@ -248,10 +251,10 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
       orderBy("fechaCreacion", "desc"),
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => {
-        const docData = doc.data();
+      const data = snapshot.docs.map((docSnap) => {
+        const docData = docSnap.data();
         return {
-          id: doc.id,
+          id: docSnap.id,
           nombres: docData.nombres || "",
           apellidos: docData.apellidos || "",
           email: docData.email || "",
@@ -292,14 +295,15 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
     onClose();
   };
 
-  const handleAprobarSolicitud = async (solicitud: Solicitud) => {
+  const handleAprobarSolicitud = (solicitud: Solicitud) => {
     setSolicitudSeleccionada(solicitud);
     setComentarioSolicitud("");
     setModalAceptar(true);
   };
 
   const handleConfirmarAceptacion = async () => {
-    if (!solicitudSeleccionada) return;
+    if (!solicitudSeleccionada || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await updateDoc(doc(db, "solicitudes", solicitudSeleccionada.id), {
         estado: "aceptada",
@@ -314,17 +318,19 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al aprobar solicitud o enviar email");
+      setIsSubmitting(false); // Solo reactivar en caso de error
     }
   };
 
-  const handleRechazarSolicitud = async (solicitud: Solicitud) => {
+  const handleRechazarSolicitud = (solicitud: Solicitud) => {
     setSolicitudSeleccionada(solicitud);
     setComentarioSolicitud("");
     setModalRechazar(true);
   };
 
   const handleConfirmarRechazo = async () => {
-    if (!solicitudSeleccionada) return;
+    if (!solicitudSeleccionada || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       await updateDoc(doc(db, "solicitudes", solicitudSeleccionada.id), {
         estado: "rechazada",
@@ -339,6 +345,37 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
     } catch (error) {
       console.error("Error:", error);
       toast.error("Error al rechazar solicitud o enviar email");
+      setIsSubmitting(false); // Solo reactivar en caso de error
+    }
+  };
+
+  const handleEliminarSolicitud = async (id: string) => {
+    if (!confirm("¿Seguro que deseas eliminar esta solicitud?")) return;
+    try {
+      await deleteDoc(doc(db, "solicitudes", id));
+      toast.success("Solicitud eliminada");
+    } catch (error) {
+      toast.error("Error al eliminar");
+    }
+  };
+
+  const handleEliminarTodas = async (estado: "aceptada" | "rechazada") => {
+    const lista = solicitudes.filter((s) => s.estado === estado);
+    if (lista.length === 0)
+      return toast.error("No hay solicitudes para eliminar");
+    if (
+      !confirm(
+        `¿Eliminar todas las ${estado === "aceptada" ? "aprobadas" : "rechazadas"} (${lista.length})?`,
+      )
+    )
+      return;
+    try {
+      await Promise.all(
+        lista.map((s) => deleteDoc(doc(db, "solicitudes", s.id))),
+      );
+      toast.success(`${lista.length} solicitudes eliminadas`);
+    } catch (error) {
+      toast.error("Error al eliminar");
     }
   };
 
@@ -378,15 +415,6 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
     );
   };
 
-  // Labels cortos para móvil — sidebar usa tab.label completo
-  const mobileLabels: Record<TabType, string> = {
-    dashboard: "Inicio",
-    proyectos: "Proyectos",
-    equipo: "Equipo",
-    solicitudes: "Solicitudes",
-    tareas: "Tareas",
-  };
-
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "proyectos", label: "Proyectos", icon: FolderKanban },
@@ -398,6 +426,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
   const tareasPendientes = tareas.filter(
     (t) => t.estado === "pendiente" || t.estado === "en_progreso",
   ).length;
+
   const solicitudesPendientes = solicitudes.filter(
     (s) => s.estado === "pendiente",
   ).length;
@@ -433,7 +462,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
       </header>
 
       {/* Layout principal */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-x-hidden">
         {/* Sidebar — solo desktop */}
         <aside className="hidden lg:flex lg:flex-col w-64 bg-white shadow-lg border-r flex-shrink-0">
           <nav className="p-4 space-y-2 overflow-y-auto flex-1">
@@ -768,7 +797,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
           {activeTab === "solicitudes" && (
             <div className="space-y-6">
               <h2 className="text-3xl font-bold text-gray-900">
-                Solicitudes de Estudiantes
+                Solicitudes de Estudiantes cambiando a Monitor
               </h2>
 
               <div className="flex gap-2 border-b border-gray-200">
@@ -807,6 +836,7 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                 </button>
               </div>
 
+              {/* Pendientes */}
               {solicitudesSubTab === "pendientes" && (
                 <div className="grid gap-4">
                   {solicitudes
@@ -875,120 +905,173 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                     .length === 0 && (
                     <Card>
                       <CardContent className="p-6 text-center text-gray-500">
-                        No hay solicitudes pendientes
+                        No hay solicitudes pendientes asdadaprueba
                       </CardContent>
                     </Card>
                   )}
                 </div>
               )}
 
+              {/* Aprobadas */}
               {solicitudesSubTab === "aprobadas" && (
-                <div className="grid gap-4">
-                  {solicitudes
-                    .filter((s) => s.estado === "aceptada")
-                    .map((solicitud) => (
-                      <Card
-                        key={solicitud.id}
-                        className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500"
+                <div className="space-y-4">
+                  {solicitudes.filter((s) => s.estado === "aceptada").length >
+                    0 && (
+                    <div className="flex justify-end mb-2">
+                      <button
+                        onClick={() => handleEliminarTodas("aceptada")}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm font-semibold"
                       >
-                        <CardContent className="p-6">
-                          <div className="space-y-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="text-xl font-bold text-gray-900">
-                                  {solicitud.nombres} {solicitud.apellidos}
-                                </h3>
-                                <p className="text-teal-600 font-medium text-sm mt-1">
-                                  {solicitud.programa}
+                        <Trash2 className="w-4 h-4" />
+                        Eliminar todas las aprobadas
+                      </button>
+                    </div>
+                  )}
+                  <div className="grid gap-4">
+                    {solicitudes
+                      .filter((s) => s.estado === "aceptada")
+                      .map((solicitud) => (
+                        <Card
+                          key={solicitud.id}
+                          className="hover:shadow-lg transition-shadow border-l-4 border-l-green-500"
+                        >
+                          <CardContent className="p-6">
+                            <div className="space-y-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="text-xl font-bold text-gray-900 truncate">
+                                    {solicitud.nombres} {solicitud.apellidos}
+                                  </h3>
+                                  <p className="text-teal-600 font-medium text-sm mt-1 truncate">
+                                    {solicitud.programa}
+                                  </p>
+                                  <p className="text-gray-500 text-sm flex items-center gap-1 mt-2 truncate">
+                                    <Mail className="w-4 h-4 shrink-0" />
+                                    {solicitud.email}
+                                  </p>
+                                  <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
+                                    <Calendar className="w-4 h-4 shrink-0" />
+                                    {solicitud.fecha}
+                                  </p>
+                                </div>
+                                <div className="shrink-0 flex items-center gap-2 ml-4">
+                                  <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700 whitespace-nowrap">
+                                    Aceptada
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleEliminarSolicitud(solicitud.id)
+                                    }
+                                    className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                    title="Eliminar solicitud"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 font-medium mb-1">
+                                  Motivación:
                                 </p>
-                                <p className="text-gray-500 text-sm flex items-center gap-1 mt-2">
-                                  <Mail className="w-4 h-4" />
-                                  {solicitud.email}
-                                </p>
-                                <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
-                                  <Calendar className="w-4 h-4" />
-                                  {solicitud.fecha}
+                                <p className="text-gray-700">
+                                  {solicitud.mensaje}
                                 </p>
                               </div>
-                              <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                                Aceptada
-                              </span>
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                              <p className="text-sm text-gray-600 font-medium mb-1">
-                                Motivación:
-                              </p>
-                              <p className="text-gray-700">
-                                {solicitud.mensaje}
-                              </p>
-                            </div>
-                          </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    {solicitudes.filter((s) => s.estado === "aceptada")
+                      .length === 0 && (
+                      <Card>
+                        <CardContent className="p-6 text-center text-gray-500">
+                          No hay solicitudes aprobadas
                         </CardContent>
                       </Card>
-                    ))}
-                  {solicitudes.filter((s) => s.estado === "aceptada").length ===
-                    0 && (
-                    <Card>
-                      <CardContent className="p-6 text-center text-gray-500">
-                        No hay solicitudes aprobadas
-                      </CardContent>
-                    </Card>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
 
+              {/* Rechazadas */}
               {solicitudesSubTab === "rechazadas" && (
-                <div className="grid gap-4">
-                  {solicitudes
-                    .filter((s) => s.estado === "rechazada")
-                    .map((solicitud) => (
-                      <Card
-                        key={solicitud.id}
-                        className="hover:shadow-lg transition-shadow border-l-4 border-l-red-500"
+                <div className="space-y-4">
+                  {solicitudes.filter((s) => s.estado === "rechazada").length >
+                    0 && (
+                    <div className="flex justify-end mb-2">
+                      <button
+                        onClick={() => handleEliminarTodas("rechazada")}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm font-semibold"
                       >
-                        <CardContent className="p-6">
-                          <div className="space-y-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h3 className="text-xl font-bold text-gray-900">
-                                  {solicitud.nombres} {solicitud.apellidos}
-                                </h3>
-                                <p className="text-teal-600 font-medium text-sm mt-1">
-                                  {solicitud.programa}
+                        <Trash2 className="w-4 h-4" />
+                        Eliminar todas las rechazadas
+                      </button>
+                    </div>
+                  )}
+                  <div className="grid gap-4">
+                    {solicitudes
+                      .filter((s) => s.estado === "rechazada")
+                      .map((solicitud) => (
+                        <Card
+                          key={solicitud.id}
+                          className="hover:shadow-lg transition-shadow border-l-4 border-l-red-500"
+                        >
+                          <CardContent className="p-6">
+                            <div className="space-y-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="text-xl font-bold text-gray-900 truncate">
+                                    {solicitud.nombres} {solicitud.apellidos}
+                                  </h3>
+                                  <p className="text-teal-600 font-medium text-sm mt-1 truncate">
+                                    {solicitud.programa}
+                                  </p>
+                                  <p className="text-gray-500 text-sm flex items-center gap-1 mt-2 truncate">
+                                    <Mail className="w-4 h-4 shrink-0" />
+                                    {solicitud.email}
+                                  </p>
+                                  <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
+                                    <Calendar className="w-4 h-4 shrink-0" />
+                                    {solicitud.fecha}
+                                  </p>
+                                </div>
+                                <div className="shrink-0 flex items-center gap-2">
+                                  <span className="px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700 whitespace-nowrap">
+                                    Rechazada
+                                  </span>
+                                  <button
+                                    onClick={() =>
+                                      handleEliminarSolicitud(solicitud.id)
+                                    }
+                                    className="p-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center shrink-0"
+                                    title="Eliminar solicitud"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-sm text-gray-600 font-medium mb-1">
+                                  Motivación:
                                 </p>
-                                <p className="text-gray-500 text-sm flex items-center gap-1 mt-2">
-                                  <Mail className="w-4 h-4" />
-                                  {solicitud.email}
-                                </p>
-                                <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
-                                  <Calendar className="w-4 h-4" />
-                                  {solicitud.fecha}
+                                <p className="text-gray-700">
+                                  {solicitud.mensaje}
                                 </p>
                               </div>
-                              <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">
-                                Rechazada
-                              </span>
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                              <p className="text-sm text-gray-600 font-medium mb-1">
-                                Motivación:
-                              </p>
-                              <p className="text-gray-700">
-                                {solicitud.mensaje}
-                              </p>
-                            </div>
-                          </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    {solicitudes.filter((s) => s.estado === "rechazada")
+                      .length === 0 && (
+                      <Card>
+                        <CardContent className="p-6 text-center text-gray-500">
+                          No hay solicitudes rechazadas
                         </CardContent>
                       </Card>
-                    ))}
-                  {solicitudes.filter((s) => s.estado === "rechazada")
-                    .length === 0 && (
-                    <Card>
-                      <CardContent className="p-6 text-center text-gray-500">
-                        No hay solicitudes rechazadas
-                      </CardContent>
-                    </Card>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1144,6 +1227,14 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                       </CardContent>
                     </Card>
                   ))}
+                {tareas.filter((t) => t.estado !== "completada").length ===
+                  0 && (
+                  <Card>
+                    <CardContent className="p-6 text-center text-gray-500">
+                      No hay tareas pendientes
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {tareas.filter((t) => t.estado === "completada").length > 0 && (
@@ -1210,15 +1301,27 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                       setComentarioSolicitud("");
                       setSolicitudSeleccionada(null);
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleConfirmarAceptacion}
-                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                   >
-                    Aceptar
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                        </svg>
+                        Enviando...
+                      </>
+                    ) : (
+                      "Aceptar"
+                    )}
                   </button>
                 </div>
               </CardContent>
@@ -1253,15 +1356,27 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
                       setComentarioSolicitud("");
                       setSolicitudSeleccionada(null);
                     }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={handleConfirmarRechazo}
-                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    disabled={isSubmitting}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
                   >
-                    Rechazar
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                        </svg>
+                        Enviando...
+                      </>
+                    ) : (
+                      "Rechazar"
+                    )}
                   </button>
                 </div>
               </CardContent>
@@ -1292,7 +1407,11 @@ export function MonitorPanel({ onClose }: MonitorPanelProps) {
             >
               <Icon className="w-5 h-5" />
               <span className="text-[10px] font-medium leading-none">
-                {mobileLabels[tab.id as TabType]}
+                {tab.id === "dashboard"
+                  ? "Inicio"
+                  : tab.id === "tareas"
+                    ? "Tareas"
+                    : tab.label}
               </span>
               {badge > 0 && (
                 <span className="absolute top-1 right-1/4 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
