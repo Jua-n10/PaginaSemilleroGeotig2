@@ -63,7 +63,7 @@ export default function App() {
       <Toaster position="top-right" richColors />
 
       {/* ── Anuncio Carrera 5K: aparece 800ms después de cargar, una vez por sesión ── */}
-      <CarreraAnuncio delay={800} oncePerSession={true} />
+      {/* <CarreraAnuncio delay={800} oncePerSession={true} /> */}
 
       <NavbarAlt onLoginClick={() => setIsLoginOpen(true)} />
       <HeroSectionAlt />

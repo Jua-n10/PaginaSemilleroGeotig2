@@ -263,6 +263,12 @@ export function JoinSectionAlt() {
     "Oportunidad de publicar artículos",
     "Networking con investigadores y profesionales",
   ];
+  const stats = [
+  { valor: "10+", label: "Proyectos activos" },
+  { valor: "50+", label: "Miembros formados" },
+  { valor: "5", label: "Publicaciones" },
+  { valor: "100%", label: "Gratuito" },
+];
 
   // ── RENDER ─────────────────────────────────
   return (
@@ -377,6 +383,7 @@ export function JoinSectionAlt() {
                 autoComplete="off"
               />
             </div>
+            
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {/* ══ IDENTIFICACIÓN ══ */}
