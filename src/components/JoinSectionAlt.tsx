@@ -425,21 +425,20 @@ export function JoinSectionAlt() {
                 <label className="block text-sm text-gray-200 mb-2">
                   Tipo de Identificación <span className="text-red-400">*</span>
                 </label>
-                <div className="space-y-2">
+                <select
+                  className={`w-full rounded-md px-3 py-2 text-sm bg-white/10 border text-white
+                    ${errors.tipoIdentificacion ? "border-red-400" : "border-white/20"}
+                    focus:outline-none focus:border-emerald-400`}
+                  {...register("tipoIdentificacion", {
+                    required: "Selecciona un tipo de identificación",
+                  })}
+                >
                   {TIPOS_IDENTIFICACION.map((tipo) => (
-                    <label key={tipo} className={radioItemCls}>
-                      <input
-                        type="radio"
-                        value={tipo}
-                        className="w-4 h-4 accent-emerald-400"
-                        {...register("tipoIdentificacion", {
-                          required: "Selecciona un tipo de identificación",
-                        })}
-                      />
-                      <span className="text-sm text-gray-200">{tipo}</span>
-                    </label>
+                    <option key={tipo} value={tipo} style={{ background: "#1e3a5f" }}>
+                      {tipo}
+                    </option>
                   ))}
-                </div>
+                </select>
                 <FieldError message={errors.tipoIdentificacion?.message} />
                 {watchTipoId === "Otro" && (
                   <div className="mt-2">
