@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, LogIn } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import logo from "figma:asset/775b8c572767ea025e0e8192b1b8c7be5684bea4.png";
 
 export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
@@ -15,11 +15,18 @@ export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
   }, []);
 
   const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setIsMobileMenuOpen(false);
-    }
+    // FIX A+B+C: cierra el menú mobile PRIMERO, luego espera a que el DOM
+    // se estabilice (50ms es suficiente sin animaciones CSS) y calcula el
+    // offset dinámico del navbar para que el elemento no quede tapado.
+    setIsMobileMenuOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      const navbar = document.querySelector("nav") as HTMLElement | null;
+      if (!el) return;
+      const navHeight = navbar?.offsetHeight ?? 80;
+      const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top, behavior: "smooth" });
+    }, 50);
   };
 
   const navItems = [
@@ -29,7 +36,6 @@ export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
     { label: "Investigación", id: "investigacion" },
     { label: "Proyectos", id: "proyectos" },
     { label: "Equipo", id: "equipo" },
-    { label: "Inscribete Aqui", id: "unete" },
   ];
 
   return (
@@ -56,12 +62,35 @@ export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-emerald-600 transition-all group-hover:w-full" />
               </button>
             ))}
+            {/* Botón primario — inscripción */}
+            <button
+              onClick={() => scrollToSection("unete")}
+              style={{
+                background: "linear-gradient(135deg, #1a8a6e, #0f5c78)",
+                boxShadow: "0 2px 10px rgba(15,110,86,0.30)",
+              }}
+              className="flex items-center gap-2 text-white px-5 py-2 rounded-[10px] font-semibold transition-all duration-200 hover:-translate-y-px hover:shadow-lg"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+              Unirme al semillero
+            </button>
+            {/* Botón secundario — login */}
             <button
               onClick={onLoginClick}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-blue-800 hover:to-teal-500 transition-all duration-300 shadow-md hover:shadow-lg"
+              style={{ borderColor: "rgba(13,110,86,0.35)" }}
+              className="flex items-center gap-2 bg-transparent border-[1.5px] text-[#0d6e56] px-5 py-2 rounded-[10px] font-medium transition-all duration-200 hover:bg-[rgba(13,110,86,0.06)]"
             >
-              <LogIn className="w-4 h-4" />
-              Acceder
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              Iniciar sesión
             </button>
           </div>
 
@@ -88,15 +117,40 @@ export function NavbarAlt({ onLoginClick }: { onLoginClick: () => void }) {
                 {item.label}
               </button>
             ))}
+            {/* Botón primario mobile — inscripción */}
+            <button
+              onClick={() => {
+                scrollToSection("unete");
+              }}
+              style={{
+                background: "linear-gradient(135deg, #1a8a6e, #0f5c78)",
+                boxShadow: "0 2px 10px rgba(15,110,86,0.30)",
+              }}
+              className="flex items-center justify-center gap-2 text-white px-5 py-2.5 rounded-[10px] font-semibold w-full transition-all duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <line x1="19" y1="8" x2="19" y2="14" />
+                <line x1="22" y1="11" x2="16" y2="11" />
+              </svg>
+              Unirme al semillero
+            </button>
+            {/* Botón secundario mobile — login */}
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
                 onLoginClick();
               }}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-900 to-teal-600 text-white px-4 py-2 rounded-lg hover:from-blue-800 hover:to-teal-500 transition-all duration-300 w-full justify-center"
+              style={{ borderColor: "rgba(13,110,86,0.35)" }}
+              className="flex items-center justify-center gap-2 bg-transparent border-[1.5px] text-[#0d6e56] px-5 py-2.5 rounded-[10px] font-medium w-full transition-all duration-200 hover:bg-[rgba(13,110,86,0.06)]"
             >
-              <LogIn className="w-4 h-4" />
-              Acceder
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+              </svg>
+              Iniciar sesión
             </button>
           </div>
         </div>
