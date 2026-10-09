@@ -1,37 +1,33 @@
-import { Satellite, Map, Mountain, Users } from 'lucide-react';
+import { ShieldAlert, Map, Trees, Droplets } from 'lucide-react';
 
-const areas = [
+const RESEARCH_LINES = [
   {
-    icon: Satellite,
-    title: 'Teledetección y Observación de la Tierra',
-    description: 'Procesamiento de imágenes satelitales para monitoreo ambiental, análisis de cambios en el territorio y estudios de cobertura vegetal.',
-    color: 'from-blue-500 to-blue-600',
-    bgColor: 'from-blue-50 to-blue-100',
-    borderColor: 'border-blue-200',
+    icon: ShieldAlert,
+    title: 'Gestión del Riesgo de Desastres y Medio Ambiente',
+    description:
+      'Evaluación de vulnerabilidades, reducción de riesgos de desastres y gestión sostenible de los ecosistemas.',
+    gradient: 'from-emerald-500 to-teal-600',
   },
   {
     icon: Map,
-    title: 'Sistemas de Información Geográfica',
-    description: 'Desarrollo de soluciones SIG para análisis espacial, cartografía digital, modelamiento territorial y gestión de recursos naturales.',
-    color: 'from-emerald-500 to-emerald-600',
-    bgColor: 'from-emerald-50 to-emerald-100',
-    borderColor: 'border-emerald-200',
+    title: 'Tecnologías de la Información Geográfica (TIG)',
+    description:
+      'Aplicación de SIG, cartografía digital y herramientas geoespaciales avanzadas para el análisis territorial.',
+    gradient: 'from-blue-500 to-cyan-600',
   },
   {
-    icon: Mountain,
-    title: 'Geografía Física y Ambiental',
-    description: 'Estudio de procesos geomorfológicos, hidrológicos y climáticos mediante técnicas geoespaciales y trabajo de campo.',
-    color: 'from-green-600 to-green-700',
-    bgColor: 'from-green-50 to-green-100',
-    borderColor: 'border-green-200',
+    icon: Trees,
+    title: 'Geografía Rural',
+    description:
+      'Análisis de las dinámicas agrarias, transformaciones del espacio rural y desarrollo local.',
+    gradient: 'from-green-600 to-emerald-600',
   },
   {
-    icon: Users,
-    title: 'Estudios Socioterritoriales',
-    description: 'Análisis de dinámicas sociales, ordenamiento territorial, planificación urbana y rural con enfoque participativo.',
-    color: 'from-purple-500 to-purple-600',
-    bgColor: 'from-purple-50 to-purple-100',
-    borderColor: 'border-purple-200',
+    icon: Droplets,
+    title: 'Ordenamiento Territorial y Manejo de Cuencas Hidrográficas',
+    description:
+      'Planificación sostenible del uso del suelo, planificación ambiental y gestión integral de recursos hídricos.',
+    gradient: 'from-teal-600 to-blue-600',
   },
 ];
 
@@ -52,29 +48,25 @@ export function ResearchAreasAlt() {
           </p>
         </div>
 
-        {/* Areas Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {areas.map((area, index) => {
-            const Icon = area.icon;
+        {/* Research Lines Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {RESEARCH_LINES.map((line) => {
+            const Icon = line.icon;
             return (
               <div
-                key={area.title}
-                className="group relative bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-transparent hover:shadow-2xl transition-all duration-300"
-                style={{ animationDelay: `${index * 100}ms` }}
+                key={line.title}
+                className="group h-full bg-white rounded-xl p-6 border border-gray-100 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
               >
-                {/* Gradient Border on Hover */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${area.gradient} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity -z-10`} 
-                     style={{ padding: '2px' }} 
-                />
-                
                 {/* Icon */}
-                <div className={`w-12 h-12 bg-gradient-to-br ${area.gradient} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                <div
+                  className={`w-12 h-12 bg-gradient-to-br ${line.gradient} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-all duration-300`}
+                >
                   <Icon className="w-6 h-6 text-white" />
                 </div>
 
                 {/* Content */}
-                <h3 className="text-gray-900 mb-3">{area.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{area.description}</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">{line.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{line.description}</p>
               </div>
             );
           })}
@@ -86,7 +78,7 @@ export function ResearchAreasAlt() {
             <p className="text-gray-700 mb-4">
               ¿Tienes interés en alguna de estas áreas o una propuesta de investigación?
             </p>
-            <button 
+            <button
               onClick={() => {
                 const element = document.getElementById('unete');
                 if (element) element.scrollIntoView({ behavior: 'smooth' });
