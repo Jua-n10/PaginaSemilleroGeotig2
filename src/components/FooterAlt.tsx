@@ -8,7 +8,7 @@ export function FooterAlt() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Logo and Description */}
           <div className="lg:col-span-1">
-            <img src={logo} alt="GEOTIG Logo" className="h-24 w-auto mb-4 brightness-0 invert" />
+            <img src={logo} alt="GEOTIG Logo" className="h-24 w-auto mb-4" />
             <p className="text-gray-300 text-sm leading-relaxed">
               Semillero de investigación especializado en geoestudios territoriales y tecnologías de información geográfica.
             </p>
