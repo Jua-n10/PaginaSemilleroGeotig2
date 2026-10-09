@@ -11,6 +11,7 @@ import { LoginModal } from "./components/LoginModal";
 import { AdminPanel } from "./components/AdminPanel";
 import { MonitorPanel } from "./components/MonitorPanel";
 import { CarreraAnuncio } from "./components/CarreraAnuncio";
+import { TorneoModal } from "./components/TorneoModal";
 import { Toaster } from "sonner";
 import { useState, useEffect } from "react";
 
@@ -64,6 +65,9 @@ export default function App() {
 
       {/* ── Anuncio Carrera 5K: aparece 800ms después de cargar, una vez por sesión ── */}
       {/* <CarreraAnuncio delay={800} oncePerSession={true} /> */}
+
+      {/* ── Pop-up promocional Torneo GEOTIG: aparece la primera visita (localStorage) ── */}
+      <TorneoModal />
 
       <NavbarAlt onLoginClick={() => setIsLoginOpen(true)} />
       <HeroSectionAlt />
