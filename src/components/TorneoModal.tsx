@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
-import { safeLocal } from "../utils/safeStorage";
 
-const STORAGE_KEY = "torneo_popup_seen";
 const WHATSAPP_PRIMARY =
   "https://wa.me/573178770506?text=Hola,%20deseo%20obtener%20m%C3%A1s%20informaci%C3%B3n%20e%20inscribirme%20al%20Torneo%20GEOTIG";
 const WHATSAPP_SECONDARY =
@@ -17,18 +15,12 @@ function WhatsAppIcon() {
 }
 
 export function TorneoModal() {
-  const [visible, setVisible] = useState(false);
+  // Visible en cada carga/recarga de la página (sin persistencia).
+  const [visible, setVisible] = useState(true);
   const [closing, setClosing] = useState(false);
 
-  // Mostrar una sola vez (persistente en localStorage)
-  useEffect(() => {
-    if (safeLocal.getItem(STORAGE_KEY)) return;
-    const t = setTimeout(() => setVisible(true), 600);
-    return () => clearTimeout(t);
-  }, []);
-
   const close = useCallback(() => {
-    safeLocal.setItem(STORAGE_KEY, "1");
+    // Solo oculta el modal en el renderizado actual; no guarda estado en el navegador.
     setClosing(true);
     setTimeout(() => setVisible(false), 320);
   }, []);
